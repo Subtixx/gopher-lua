@@ -5,9 +5,7 @@ import (
 )
 
 func OpenTable(L *LState) int {
-	tabmod := L.RegisterModule(TabLibName, tableFuncs)
-	L.Push(tabmod)
-	return 1
+	return OpenTableBlacklist(L)
 }
 
 func OpenTableBlacklist(L *LState, blacklist ...string) int {

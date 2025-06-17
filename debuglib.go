@@ -6,9 +6,7 @@ import (
 )
 
 func OpenDebug(L *LState) int {
-	dbgmod := L.RegisterModule(DebugLibName, debugFuncs)
-	L.Push(dbgmod)
-	return 1
+	return OpenDebugBlacklist(L)
 }
 
 func OpenDebugBlacklist(L *LState, blacklist ...string) int {

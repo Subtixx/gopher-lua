@@ -13,9 +13,7 @@ func init() {
 }
 
 func OpenOs(L *LState) int {
-	osmod := L.RegisterModule(OsLibName, osFuncs)
-	L.Push(osmod)
-	return 1
+	return OpenOsBlacklist(L)
 }
 
 func OpenOsBlacklist(L *LState, blacklist ...string) int {

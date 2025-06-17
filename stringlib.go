@@ -10,18 +10,7 @@ import (
 const emptyLString LString = LString("")
 
 func OpenString(L *LState) int {
-	var mod *LTable
-	//_, ok := L.G.builtinMts[int(LTString)]
-	//if !ok {
-	mod = L.RegisterModule(StringLibName, strFuncs).(*LTable)
-	gmatch := L.NewClosure(strGmatch, L.NewFunction(strGmatchIter))
-	mod.RawSetString("gmatch", gmatch)
-	mod.RawSetString("gfind", gmatch)
-	mod.RawSetString("__index", mod)
-	L.G.builtinMts[int(LTString)] = mod
-	//}
-	L.Push(mod)
-	return 1
+	return OpenStringBlacklist(L)
 }
 
 func OpenStringBlacklist(L *LState, blacklist ...string) int {

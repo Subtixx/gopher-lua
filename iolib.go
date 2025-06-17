@@ -178,10 +178,14 @@ var stdFiles = []struct {
 }
 
 func OpenIo(L *LState) int {
+	return OpenIoBlacklist(L)
+}
+
+func OpenIoBlacklist(L *LState, blacklist ...string) int {
 	mod := L.RegisterModule(IoLibName, map[string]LGFunction{}).(*LTable)
 	mt := L.NewTypeMetatable(lFileClass)
 	mt.RawSetString("__index", mt)
-	L.SetFuncs(mt, fileMethods)
+	L.SetFuncs(mt, blacklistFuncs(fileMethods, blacklist))
 	mt.RawSetString("lines", L.NewClosure(fileLines, L.NewFunction(fileLinesIter)))
 
 	for _, finfo := range stdFiles {
@@ -191,7 +195,8 @@ func OpenIo(L *LState) int {
 	uv := L.CreateTable(2, 0)
 	uv.RawSetInt(fileDefOutIndex, mod.RawGetString("stdout"))
 	uv.RawSetInt(fileDefInIndex, mod.RawGetString("stdin"))
-	for name, fn := range ioFuncs {
+	filteredIoFuncs := blacklistFuncs(ioFuncs, blacklist)
+	for name, fn := range filteredIoFuncs {
 		mod.RawSetString(name, L.NewClosure(fn, uv))
 	}
 	mod.RawSetString("lines", L.NewClosure(ioLines, uv, L.NewClosure(ioLinesIter, uv)))

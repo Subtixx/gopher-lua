@@ -24,6 +24,21 @@ func OpenString(L *LState) int {
 	return 1
 }
 
+func OpenStringBlacklist(L *LState, blacklist ...string) int {
+	var mod *LTable
+	//_, ok := L.G.builtinMts[int(LTString)]
+	//if !ok {
+	mod = L.RegisterModule(StringLibName, blacklistFuncs(strFuncs, blacklist)).(*LTable)
+	gmatch := L.NewClosure(strGmatch, L.NewFunction(strGmatchIter))
+	mod.RawSetString("gmatch", gmatch)
+	mod.RawSetString("gfind", gmatch)
+	mod.RawSetString("__index", mod)
+	L.G.builtinMts[int(LTString)] = mod
+	//}
+	L.Push(mod)
+	return 1
+}
+
 var strFuncs = map[string]LGFunction{
 	"byte":    strByte,
 	"char":    strChar,
@@ -222,7 +237,7 @@ func strGsubStr(L *LState, str string, repl string, matches []*pm.MatchData) str
 	infoList := make([]replaceInfo, 0, len(matches))
 	for _, match := range matches {
 		start, end := match.Capture(0), match.Capture(1)
-		sc := newFlagScanner('%', "", "", repl)
+		sc := newFlagScanner('%', "", "", "", repl)
 		for c, eos := sc.Next(); !eos; c, eos = sc.Next() {
 			if !sc.ChangeFlag {
 				if sc.HasFlag {

@@ -12,42 +12,14 @@ func init() {
 	startedAt = time.Now()
 }
 
-func getIntField(L *LState, tb *LTable, key string, v int) int {
-	ret := tb.RawGetString(key)
-
-	switch lv := ret.(type) {
-	case LNumber:
-		return int(lv)
-	case LString:
-		slv := string(lv)
-		slv = strings.TrimLeft(slv, " ")
-		if strings.HasPrefix(slv, "0") && !strings.HasPrefix(slv, "0x") && !strings.HasPrefix(slv, "0X") {
-			// Standard lua interpreter only support decimal and hexadecimal
-			slv = strings.TrimLeft(slv, "0")
-			if slv == "" {
-				return 0
-			}
-		}
-		if num, err := parseNumber(slv); err == nil {
-			return int(num)
-		}
-	default:
-		return v
-	}
-
-	return v
-}
-
-func getBoolField(L *LState, tb *LTable, key string, v bool) bool {
-	ret := tb.RawGetString(key)
-	if lb, ok := ret.(LBool); ok {
-		return bool(lb)
-	}
-	return v
-}
-
 func OpenOs(L *LState) int {
 	osmod := L.RegisterModule(OsLibName, osFuncs)
+	L.Push(osmod)
+	return 1
+}
+
+func OpenOsBlacklist(L *LState, blacklist ...string) int {
+	osmod := L.RegisterModule(OsLibName, blacklistFuncs(osFuncs, blacklist))
 	L.Push(osmod)
 	return 1
 }
@@ -203,17 +175,17 @@ func osTime(L *LState) int {
 			if !ok {
 				L.TypeError(1, LTTable)
 			}
-			sec := getIntField(L, tbl, "sec", 0)
-			min := getIntField(L, tbl, "min", 0)
-			hour := getIntField(L, tbl, "hour", 12)
-			day := getIntField(L, tbl, "day", -1)
-			month := getIntField(L, tbl, "month", -1)
-			year := getIntField(L, tbl, "year", -1)
-			isdst := getBoolField(L, tbl, "isdst", false)
-			t := time.Date(year, time.Month(month), day, hour, min, sec, 0, time.Local)
-			// TODO dst
-			if false {
-				print(isdst)
+			second := GetIntField(L, tbl, "sec", 0)
+			minute := GetIntField(L, tbl, "min", 0)
+			hour := GetIntField(L, tbl, "hour", 12)
+			day := GetIntField(L, tbl, "day", -1)
+			month := GetIntField(L, tbl, "month", -1)
+			year := GetIntField(L, tbl, "year", -1)
+			isDaylightSaving := GetBoolField(L, tbl, "isdst", false)
+			t := time.Date(year, time.Month(month), day, hour, minute, second, 0, time.Local)
+			if isDaylightSaving {
+				_, offset := t.Zone()
+				t = t.Add(time.Duration(offset) * time.Second)
 			}
 			L.Push(LNumber(t.Unix()))
 		}
@@ -226,8 +198,11 @@ func osTmpname(L *LState) int {
 	if err != nil {
 		L.RaiseError("unable to generate a unique filename")
 	}
+	//goland:noinspection GoUnhandledErrorResult,GoDfaErrorMayBeNotNil
 	file.Close()
+	//goland:noinspection GoUnhandledErrorResult,GoDfaErrorMayBeNotNil
 	os.Remove(file.Name()) // ignore errors
+	//goland:noinspection GoDfaErrorMayBeNotNil
 	L.Push(LString(file.Name()))
 	return 1
 }

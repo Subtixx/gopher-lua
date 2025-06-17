@@ -11,6 +11,12 @@ func OpenDebug(L *LState) int {
 	return 1
 }
 
+func OpenDebugBlacklist(L *LState, blacklist ...string) int {
+	dbgmod := L.RegisterModule(DebugLibName, blacklistFuncs(debugFuncs, blacklist))
+	L.Push(dbgmod)
+	return 1
+}
+
 var debugFuncs = map[string]LGFunction{
 	"getfenv":      debugGetFEnv,
 	"getinfo":      debugGetInfo,

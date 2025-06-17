@@ -10,6 +10,12 @@ func OpenTable(L *LState) int {
 	return 1
 }
 
+func OpenTableBlacklist(L *LState, blacklist ...string) int {
+	tabmod := L.RegisterModule(TabLibName, blacklistFuncs(tableFuncs, blacklist))
+	L.Push(tabmod)
+	return 1
+}
+
 var tableFuncs = map[string]LGFunction{
 	"getn":   tableGetN,
 	"concat": tableConcat,
@@ -66,19 +72,18 @@ func tableConcat(L *LState) int {
 		L.Push(emptyLString)
 		return 1
 	}
-	//TODO should flushing?
-	retbottom := L.GetTop()
+	result := ""
 	for ; i <= j; i++ {
 		v := tbl.RawGetInt(i)
 		if !LVCanConvToString(v) {
 			L.RaiseError("invalid value (%s) at index %d in table for concat", v.Type().String(), i)
 		}
-		L.Push(v)
+		result += LVAsString(v)
 		if i != j {
-			L.Push(sep)
+			result += LVAsString(sep)
 		}
 	}
-	L.Push(stringConcat(L, L.GetTop()-retbottom, L.reg.Top()-1))
+	L.Push(LString(result))
 	return 1
 }
 

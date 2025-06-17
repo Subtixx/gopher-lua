@@ -818,7 +818,7 @@ func init() {
 						}
 					}
 				} else if str, ok1 := unaryv.(LString); ok1 {
-					if num, err := parseNumber(string(str)); err == nil {
+					if num, err := ParseNumber(string(str)); err == nil {
 						// this section is inlined by go-inline
 						// source function is 'func (rg *registry) Set(regi int, vali LValue) ' in '_state.go'
 						{
@@ -2323,12 +2323,12 @@ func objectArith(L *LState, opcode int, lhs, rhs LValue) LValue {
 		return L.reg.Pop()
 	}
 	if str, ok := lhs.(LString); ok {
-		if lnum, err := parseNumber(string(str)); err == nil {
+		if lnum, err := ParseNumber(string(str)); err == nil {
 			lhs = lnum
 		}
 	}
 	if str, ok := rhs.(LString); ok {
-		if rnum, err := parseNumber(string(str)); err == nil {
+		if rnum, err := ParseNumber(string(str)); err == nil {
 			rhs = rnum
 		}
 	}

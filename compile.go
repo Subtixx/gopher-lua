@@ -126,7 +126,7 @@ func isVarArgReturnExpr(expr ast.Expr) bool {
 
 func lnumberValue(expr ast.Expr) (LNumber, bool) {
 	if ex, ok := expr.(*ast.NumberExpr); ok {
-		lv, err := parseNumber(ex.Value)
+		lv, err := ParseNumber(ex.Value)
 		if err != nil {
 			lv = LNumber(math.NaN())
 		}
@@ -1151,7 +1151,7 @@ func compileExpr(context *funcContext, reg int, expr ast.Expr, ec *expcontext) i
 		code.AddABx(OP_LOADK, sreg, context.ConstIndex(LString(ex.Value)), sline(ex))
 		return sused
 	case *ast.NumberExpr:
-		num, err := parseNumber(ex.Value)
+		num, err := ParseNumber(ex.Value)
 		if err != nil {
 			num = LNumber(math.NaN())
 		}

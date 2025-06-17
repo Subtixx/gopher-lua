@@ -380,7 +380,7 @@ func init() {
 					L.Call(1, 1)
 					// +inline-call reg.Set RA reg.Pop()
 				} else if str, ok1 := unaryv.(LString); ok1 {
-					if num, err := parseNumber(string(str)); err == nil {
+					if num, err := ParseNumber(string(str)); err == nil {
 						// +inline-call reg.Set RA -num
 					} else {
 						L.RaiseError("__unm undefined")
@@ -907,12 +907,12 @@ func objectArith(L *LState, opcode int, lhs, rhs LValue) LValue {
 		return L.reg.Pop()
 	}
 	if str, ok := lhs.(LString); ok {
-		if lnum, err := parseNumber(string(str)); err == nil {
+		if lnum, err := ParseNumber(string(str)); err == nil {
 			lhs = lnum
 		}
 	}
 	if str, ok := rhs.(LString); ok {
-		if rnum, err := parseNumber(string(str)); err == nil {
+		if rnum, err := ParseNumber(string(str)); err == nil {
 			rhs = rnum
 		}
 	}

@@ -41,7 +41,7 @@ func (ls *LState) CheckNumber(n int) LNumber {
 		return lv
 	}
 	if lv, ok := v.(LString); ok {
-		if num, err := parseNumber(string(lv)); err == nil {
+		if num, err := ParseNumber(string(lv)); err == nil {
 			return num
 		}
 	}

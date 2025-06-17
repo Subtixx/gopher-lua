@@ -130,17 +130,17 @@ func strftime(t time.Time, cfmt string) string {
 	return sc.String()
 }
 
-func isInteger(v LNumber) bool {
+func IsInteger(v LNumber) bool {
 	return float64(v) == float64(int64(v))
 	//_, frac := math.Modf(float64(v))
 	//return frac == 0.0
 }
 
-func isArrayKey(v LNumber) bool {
-	return isInteger(v) && v < LNumber(int((^uint(0))>>1)) && v > LNumber(0) && v < LNumber(MaxArrayIndex)
+func IsArrayKey(v LNumber) bool {
+	return IsInteger(v) && v < LNumber(int((^uint(0))>>1)) && v > LNumber(0) && v < LNumber(MaxArrayIndex)
 }
 
-func parseNumber(number string) (LNumber, error) {
+func ParseNumber(number string) (LNumber, error) {
 	var value LNumber
 	number = strings.Trim(number, " \t\n")
 	if v, err := strconv.ParseInt(number, 0, LNumberBit); err != nil {
@@ -153,6 +153,40 @@ func parseNumber(number string) (LNumber, error) {
 		value = LNumber(v)
 	}
 	return value, nil
+}
+
+func GetIntField(L *LState, tb *LTable, key string, v int) int {
+	ret := tb.RawGetString(key)
+
+	switch lv := ret.(type) {
+	case LNumber:
+		return int(lv)
+	case LString:
+		slv := string(lv)
+		slv = strings.TrimLeft(slv, " ")
+		if strings.HasPrefix(slv, "0") && !strings.HasPrefix(slv, "0x") && !strings.HasPrefix(slv, "0X") {
+			// Standard lua interpreter only support decimal and hexadecimal
+			slv = strings.TrimLeft(slv, "0")
+			if slv == "" {
+				return 0
+			}
+		}
+		if num, err := ParseNumber(slv); err == nil {
+			return int(num)
+		}
+	default:
+		return v
+	}
+
+	return v
+}
+
+func GetBoolField(L *LState, tb *LTable, key string, v bool) bool {
+	ret := tb.RawGetString(key)
+	if lb, ok := ret.(LBool); ok {
+		return bool(lb)
+	}
+	return v
 }
 
 func popenArgs(arg string) (string, []string) {
@@ -262,4 +296,18 @@ func unsafeFastStringToReadOnlyBytes(s string) (bs []byte) {
 	bh.Cap = sh.Len
 	bh.Len = sh.Len
 	return
+}
+
+func blacklistFuncs(funcs map[string]LGFunction, blacklist []string) map[string]LGFunction {
+	filtered := make(map[string]LGFunction)
+	black := make(map[string]struct{}, len(blacklist))
+	for _, name := range blacklist {
+		black[name] = struct{}{}
+	}
+	for k, v := range funcs {
+		if _, found := black[k]; !found {
+			filtered[k] = v
+		}
+	}
+	return filtered
 }

@@ -147,7 +147,7 @@ func (tb *LTable) Remove(pos int) LValue {
 func (tb *LTable) RawSet(key LValue, value LValue) {
 	switch v := key.(type) {
 	case LNumber:
-		if isArrayKey(v) {
+		if IsArrayKey(v) {
 			if tb.array == nil {
 				tb.array = make([]LValue, 0, defaultArrayCap)
 			}
@@ -251,7 +251,7 @@ func (tb *LTable) RawSetH(key LValue, value LValue) {
 func (tb *LTable) RawGet(key LValue) LValue {
 	switch v := key.(type) {
 	case LNumber:
-		if isArrayKey(v) {
+		if IsArrayKey(v) {
 			if tb.array == nil {
 				return LNil
 			}
@@ -356,7 +356,7 @@ func (tb *LTable) Next(key LValue) (LValue, LValue) {
 	}
 
 	if init || key != LNumber(0) {
-		if kv, ok := key.(LNumber); ok && isInteger(kv) && int(kv) >= 0 && kv < LNumber(MaxArrayIndex) {
+		if kv, ok := key.(LNumber); ok && IsInteger(kv) && int(kv) >= 0 && kv < LNumber(MaxArrayIndex) {
 			index := int(kv)
 			if tb.array != nil {
 				for ; index < len(tb.array); index++ {

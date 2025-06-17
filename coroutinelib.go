@@ -1,8 +1,12 @@
 package lua
 
 func OpenCoroutine(L *LState) int {
+	return OpenCoroutineBlacklist(L)
+}
+
+func OpenCoroutineBlacklist(L *LState, blacklist ...string) int {
 	// TODO: Tie module name to contents of linit.go?
-	mod := L.RegisterModule(CoroutineLibName, coFuncs)
+	mod := L.RegisterModule(CoroutineLibName, blacklistFuncs(coFuncs, blacklist))
 	L.Push(mod)
 	return 1
 }

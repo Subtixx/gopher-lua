@@ -47,7 +47,11 @@ func loFindFile(L *LState, name, pname string) (string, string) {
 }
 
 func OpenPackage(L *LState) int {
-	packagemod := L.RegisterModule(LoadLibName, loFuncs)
+	return OpenPackageBlacklist(L)
+}
+
+func OpenPackageBlacklist(L *LState, blacklist ...string) int {
+	packagemod := L.RegisterModule(LoadLibName, blacklistFuncs(loFuncs, blacklist))
 
 	L.SetField(packagemod, "preload", L.NewTable())
 
